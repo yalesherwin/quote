@@ -98,7 +98,7 @@
       <select id="code" name="code" required>
         <option>Loading country codes...</option>
       </select>
-      <input type="tel" id="phone" name="phone" placeholder="Phone number" required />
+      <input type="tel" id="phone" name="phone" placeholder="Phone number (e.g., +19154316688)" required />
       <button type="submit" id="submitBtn">Submit Quote</button>
     </form>
     <div class="quote-box" id="quoteBox">
@@ -200,12 +200,12 @@
       }
     });
 
-    // Load the country codes for the phone number input
+    // Initialize country codes for the phone number input
     function loadCountryCodes() {
       const select = document.getElementById('code');
-      const countryCodes = iti.getSelectedCountryData().dialCode;
       select.innerHTML = ''; // Clear any existing options
-      select.appendChild(new Option(`+${countryCodes}`, `+${countryCodes}`));  // Add the selected country code
+      const countryData = iti.getSelectedCountryData();
+      select.appendChild(new Option(`+${countryData.dialCode}`, `+${countryData.dialCode}`));  // Add the selected country code
     }
 
     loadCountryCodes();  // Initialize country code selection
