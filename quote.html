@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -77,6 +76,8 @@
       background-color: #28a745;
     }
   </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input/build/css/intlTelInput.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input/build/js/intlTelInput.min.js"></script>
 </head>
 <body>
   <div class="overlay" id="quoteSection">
@@ -92,27 +93,77 @@
     </div>
     <h2 id="form-title">Product Quote Form</h2>
     <form id="quoteForm">
-      <textarea id="product" name="product" placeholder="您需要什么产品" required></textarea>
-      <textarea id="spec" name="spec" placeholder="您需要的尺寸"></textarea>
+      <textarea id="product" name="product" placeholder="What product do you need?" required></textarea>
+      <textarea id="spec" name="spec" placeholder="What specifications do you need?"></textarea>
       <select id="code" name="code" required>
         <option>Loading country codes...</option>
       </select>
-      <input type="tel" id="phone" name="phone" placeholder="手机号" required />
-      <button type="submit" id="submitBtn">提交报价</button>
+      <input type="tel" id="phone" name="phone" placeholder="Phone number" required />
+      <button type="submit" id="submitBtn">Submit Quote</button>
     </form>
     <div class="quote-box" id="quoteBox">
-      <h4>✅ 您的报价：</h4>
+      <h4>✅ Your Quote:</h4>
       <p id="quoteInfo"></p>
-      <button onclick="downloadQuote()">📥 保存报价文字</button>
-      <button onclick="downloadQuoteImage()">🖼️ 保存为图片</button>
+      <button onclick="downloadQuote()">📥 Save Quote Text</button>
+      <button onclick="downloadQuoteImage()">🖼️ Save as Image</button>
     </div>
     <div style="margin-top:20px;text-align:center">
-      📞 联系我们：<a href="https://wa.me/8619154316688" target="_blank">WhatsApp 8619154316688</a>
+      📞 Contact us: <a href="https://wa.me/8619154316688" target="_blank">WhatsApp 8619154316688</a>
     </div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
+    // Initialize international phone input
+    const input = document.querySelector("#phone");
+    const iti = intlTelInput(input, {
+      initialCountry: "auto", // Automatically detect user's country
+      geoIpLookup: function(callback) {
+        fetch("https://ipinfo.io?token=YOUR_API_KEY")
+          .then(response => response.json())
+          .then(data => callback(data.country));
+      },
+      utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input/build/js/utils.js", // Script to format phone number
+    });
+
+    // Language data for switching content
+    const languageData = {
+      en: {
+        formTitle: "Product Quote Form",
+        productPlaceholder: "What product do you need?",
+        specPlaceholder: "What specifications do you need?",
+        phonePlaceholder: "Phone number",
+        submitButtonText: "Submit Quote",
+        quoteText: "✅ Your Quote:",
+        downloadText: "📥 Save Quote Text",
+        downloadImageText: "🖼️ Save as Image"
+      },
+      zh: {
+        formTitle: "产品报价表单",
+        productPlaceholder: "您需要什么产品",
+        specPlaceholder: "您需要的尺寸",
+        phonePlaceholder: "手机号",
+        submitButtonText: "提交报价",
+        quoteText: "✅ 您的报价：",
+        downloadText: "📥 保存报价文字",
+        downloadImageText: "🖼️ 保存为图片"
+      },
+      // Add other languages here as necessary
+    };
+
+    // Function to switch languages
+    function setLang(lang) {
+      document.getElementById('form-title').textContent = languageData[lang].formTitle;
+      document.getElementById('product').placeholder = languageData[lang].productPlaceholder;
+      document.getElementById('spec').placeholder = languageData[lang].specPlaceholder;
+      document.getElementById('phone').placeholder = languageData[lang].phonePlaceholder;
+      document.getElementById('submitBtn').textContent = languageData[lang].submitButtonText;
+      document.getElementById('quoteInfo').textContent = languageData[lang].quoteText;
+      document.querySelector('.quote-box button:nth-child(1)').textContent = languageData[lang].downloadText;
+      document.querySelector('.quote-box button:nth-child(2)').textContent = languageData[lang].downloadImageText;
+    }
+
+    // Function to save quote as text
     function downloadQuote() {
       const content = document.getElementById('quoteInfo').innerText;
       const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -122,6 +173,7 @@
       a.click();
     }
 
+    // Function to save quote as image
     function downloadQuoteImage() {
       const section = document.getElementById('quoteSection');
       html2canvas(section).then(canvas => {
@@ -131,6 +183,32 @@
         link.click();
       });
     }
+
+    // Form submission logic
+    document.getElementById('quoteForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const product = document.getElementById('product').value;
+      const spec = document.getElementById('spec').value;
+      const phone = iti.getNumber();  // Get the full phone number with the country code
+
+      if (product && spec && phone) {
+        document.getElementById('quoteInfo').innerText = `Product: ${product}\nSpecification: ${spec}\nPhone: ${phone}`;
+        document.getElementById('quoteBox').style.display = 'block';
+      } else {
+        alert('Please fill out all fields.');
+      }
+    });
+
+    // Load the country codes for the phone number input
+    function loadCountryCodes() {
+      const select = document.getElementById('code');
+      const countryCodes = iti.getSelectedCountryData().dialCode;
+      select.innerHTML = ''; // Clear any existing options
+      select.appendChild(new Option(`+${countryCodes}`, `+${countryCodes}`));  // Add the selected country code
+    }
+
+    loadCountryCodes();  // Initialize country code selection
   </script>
 </body>
 </html>
