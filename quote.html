@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +14,7 @@
       padding: 0;
     }
     .overlay {
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(255, 255, 255, 0.95);
       padding: 30px;
       max-width: 600px;
       margin: 50px auto;
@@ -26,11 +27,15 @@
     }
     input, select, textarea, button {
       width: 100%;
-      padding: 12px;
+      padding: 16px;
       margin: 10px 0;
       border-radius: 6px;
       border: 1px solid #ccc;
       font-size: 16px;
+    }
+    textarea {
+      resize: vertical;
+      height: 100px;
     }
     button {
       background-color: #0066cc;
@@ -43,9 +48,9 @@
     }
     .brand {
       text-align: center;
-      font-size: 24px;
+      font-size: 26px;
       font-weight: bold;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
       color: #003366;
     }
     .flag-select {
@@ -60,10 +65,21 @@
       cursor: pointer;
       font-size: 18px;
     }
+    .quote-box {
+      background: #f0f8ff;
+      padding: 16px;
+      margin-top: 20px;
+      border-radius: 8px;
+      display: none;
+    }
+    .quote-box button {
+      margin-top: 10px;
+      background-color: #28a745;
+    }
   </style>
 </head>
 <body>
-  <div class="overlay">
+  <div class="overlay" id="quoteSection">
     <div class="brand">CHINACNU STEEL</div>
     <div class="flag-select">
       <button onclick="setLang('zh')">🇨🇳</button>
@@ -76,86 +92,45 @@
     </div>
     <h2 id="form-title">Product Quote Form</h2>
     <form id="quoteForm">
-      <input type="text" id="product" name="product" placeholder="您需要什么产品" required />
-      <input type="text" id="spec" name="spec" placeholder="您需要的尺寸" />
-      <select id="code" required>
-        <option value="">选择国家代码</option>
-        <option value="86">+86</option>
-        <option value="1">+1</option>
-        <option value="44">+44</option>
-        <option value="976">+976</option>
-        <option value="971">+971</option>
-        <option value="33">+33</option>
-        <option value="7">+7</option>
+      <textarea id="product" name="product" placeholder="您需要什么产品" required></textarea>
+      <textarea id="spec" name="spec" placeholder="您需要的尺寸"></textarea>
+      <select id="code" name="code" required>
+        <option>Loading country codes...</option>
       </select>
       <input type="tel" id="phone" name="phone" placeholder="手机号" required />
       <button type="submit" id="submitBtn">提交报价</button>
     </form>
+    <div class="quote-box" id="quoteBox">
+      <h4>✅ 您的报价：</h4>
+      <p id="quoteInfo"></p>
+      <button onclick="downloadQuote()">📥 保存报价文字</button>
+      <button onclick="downloadQuoteImage()">🖼️ 保存为图片</button>
+    </div>
     <div style="margin-top:20px;text-align:center">
       📞 联系我们：<a href="https://wa.me/8619154316688" target="_blank">WhatsApp 8619154316688</a>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBIhaNpTF7eOPd4UzH0_WuBHMoKhaZ9f10",
-      authDomain: "cnu-tracker.firebaseapp.com",
-      projectId: "cnu-tracker",
-      storageBucket: "cnu-tracker.appspot.com",
-      messagingSenderId: "334145477498",
-      appId: "1:334145477498:web:25d2df0ea74fc9d27694c3"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const form = document.getElementById('quoteForm');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const product = form.product.value.trim();
-      const spec = form.spec.value.trim();
-      const code = document.getElementById('code').value;
-      const phone = form.phone.value.trim();
-      if (!product || !code || !phone) return alert('请填写完整');
-
-      const fullPhone = code + phone;
-
-      await addDoc(collection(db, 'whatsappLeads'), {
-        product,
-        spec,
-        phone: fullPhone,
-        createdAt: new Date()
-      });
-
-      window.location.href = `https://wa.me/${fullPhone}`;
-    });
-  </script>
-
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    const translations = {
-      zh: { title: "产品报价表", placeholder1: "您需要什么产品", placeholder2: "您需要的尺寸", placeholder3: "手机号", submit: "提交报价" },
-      en: { title: "Product Quote Form", placeholder1: "What product do you need?", placeholder2: "What size do you need?", placeholder3: "Phone Number", submit: "Submit Quote" },
-      ru: { title: "Форма запроса", placeholder1: "Какой продукт вам нужен?", placeholder2: "Какой размер вам нужен?", placeholder3: "Телефон", submit: "Отправить" },
-      ar: { title: "طلب عرض سعر", placeholder1: "ما المنتج الذي تحتاجه؟", placeholder2: "ما المقاس الذي تحتاجه؟", placeholder3: "رقم الهاتف", submit: "إرسال" },
-      pt: { title: "Pedido de Cotação", placeholder1: "Qual produto você precisa?", placeholder2: "Qual tamanho você precisa?", placeholder3: "Telefone", submit: "Enviar" },
-      es: { title: "Solicitud de Cotización", placeholder1: "¿Qué producto necesita?", placeholder2: "¿Qué tamaño necesita?", placeholder3: "Teléfono", submit: "Enviar" },
-      fr: { title: "Demande de Devis", placeholder1: "Quel produit vous faut-il ?", placeholder2: "Quelle taille vous faut-il ?", placeholder3: "Téléphone", submit: "Soumettre" }
-    };
-
-    function setLang(lang) {
-      const t = translations[lang] || translations.en;
-      document.getElementById('form-title').innerText = t.title;
-      document.getElementById('product').placeholder = t.placeholder1;
-      document.getElementById('spec').placeholder = t.placeholder2;
-      document.getElementById('phone').placeholder = t.placeholder3;
-      document.getElementById('submitBtn').innerText = t.submit;
+    function downloadQuote() {
+      const content = document.getElementById('quoteInfo').innerText;
+      const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'quote.txt';
+      a.click();
     }
 
-    const browserLang = navigator.language.slice(0, 2);
-    setLang(browserLang);
+    function downloadQuoteImage() {
+      const section = document.getElementById('quoteSection');
+      html2canvas(section).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'quote.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      });
+    }
   </script>
 </body>
 </html>
