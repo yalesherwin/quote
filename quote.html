@@ -114,10 +114,10 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    // Initialize international phone input
+    // Initialize international phone input with fixed default country (e.g., US or China)
     const input = document.querySelector("#phone");
     const iti = intlTelInput(input, {
-      initialCountry: "auto", // Automatically detect user's country
+      initialCountry: "us", // Set a default country code, you can also set 'auto' but that might not work always
       geoIpLookup: function(callback) {
         fetch("https://ipinfo.io?token=YOUR_API_KEY")
           .then(response => response.json())
