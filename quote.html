@@ -1,14 +1,91 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>客户需求填写</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CHINACNU Steel Quote</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: url('https://source.unsplash.com/1600x900/?steel,coil') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      padding: 0;
+    }
+    .overlay {
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 30px;
+      max-width: 600px;
+      margin: 50px auto;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    }
+    h2 {
+      text-align: center;
+      color: #002244;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    button {
+      background-color: #0066cc;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #004999;
+    }
+    .brand {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #003366;
+    }
+    .flag-select {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .flag-select button {
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay">
+    <div class="brand">CHINACNU STEEL</div>
+    <div class="flag-select">
+      <button onclick="setLang('zh')">🇨🇳</button>
+      <button onclick="setLang('en')">🇺🇸</button>
+      <button onclick="setLang('ru')">🇷🇺</button>
+      <button onclick="setLang('ar')">🇸🇦</button>
+      <button onclick="setLang('pt')">🇧🇷</button>
+      <button onclick="setLang('es')">🇪🇸</button>
+      <button onclick="setLang('fr')">🇫🇷</button>
+    </div>
+    <h2 id="form-title">Product Quote Form</h2>
+    <form id="quoteForm">
+      <input type="text" id="product" name="product" placeholder="Product Description" required />
+      <input type="text" id="spec" name="spec" placeholder="Product Specifications (optional)" />
+      <input type="tel" id="phone" name="phone" placeholder="Phone Number (with country code)" required />
+      <button type="submit" id="submitBtn">Send via WhatsApp</button>
+    </form>
+  </div>
+
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import {
-      getFirestore, collection, addDoc, doc, onSnapshot
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyBIhaNpTF7eOPd4UzH0_WuBHMoKhaZ9f10",
@@ -22,71 +99,48 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const handleSubmit = async (e) => {
+    const form = document.getElementById('quoteForm');
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = Object.fromEntries(new FormData(e.target).entries());
-      const docRef = await addDoc(collection(db, 'quotes'), {
-        ...formData,
-        createdAt: new Date(),
-        quoted: false,
-        price: '',
-        total: '',
-        comment: ''
-      });
-      localStorage.setItem('quote_id', docRef.id);
-      document.getElementById('formBox').style.display = 'none';
-      document.getElementById('waitMsg').style.display = 'block';
-      listenForQuote(docRef.id);
-    };
+      const product = form.product.value.trim();
+      const spec = form.spec.value.trim();
+      const phone = form.phone.value.trim();
+      if (!product || !phone) return alert('Please complete required fields');
 
-    const listenForQuote = (id) => {
-      const ref = doc(db, 'quotes', id);
-      onSnapshot(ref, (docSnap) => {
-        const data = docSnap.data();
-        if (data && data.price) {
-          document.getElementById('waitMsg').style.display = 'none';
-          document.getElementById('resultBox').innerHTML = `
-            <p>✅ 您的报价已生成：</p>
-            <p>产品：${data.product}</p>
-            <p>单价：${data.price}</p>
-            <p>总价：${data.total}</p>
-            <p>备注：${data.comment}</p>
-          `;
-        }
+      await addDoc(collection(db, 'whatsappLeads'), {
+        product,
+        spec,
+        phone,
+        createdAt: new Date()
       });
-    };
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const id = localStorage.getItem('quote_id');
-      if (id) {
-        document.getElementById('formBox').style.display = 'none';
-        document.getElementById('waitMsg').style.display = 'block';
-        listenForQuote(id);
-      }
-      document.getElementById('quoteForm').addEventListener('submit', handleSubmit);
+      const phoneNum = phone.replace(/[^\d]/g, '');
+      window.location.href = `https://wa.me/${phoneNum}`;
     });
   </script>
-</head>
-<body>
-  <div style="max-width:600px;margin:50px auto;padding:20px;border:1px solid #ccc;border-radius:8px">
-    <h2 style="text-align:center;margin-bottom:20px">📋 客户需求填写</h2>
-    <div id="formBox">
-      <form id="quoteForm">
-        <input name="name" placeholder="姓名或公司" required style="width:100%;padding:10px;margin-bottom:10px" />
-        <input name="contact" placeholder="联系方式" required style="width:100%;padding:10px;margin-bottom:10px" />
-        <input name="country" placeholder="国家" required style="width:100%;padding:10px;margin-bottom:10px" />
-        <input name="product" placeholder="产品名称" required style="width:100%;padding:10px;margin-bottom:10px" />
-        <input name="thickness" placeholder="厚度(mm)" style="width:100%;padding:10px;margin-bottom:10px" />
-        <input name="width" placeholder="宽度(mm)" style="width:100%;padding:10px;margin-bottom:10px" />
-        <input name="quantity" placeholder="需求吨数" style="width:100%;padding:10px;margin-bottom:10px" />
-        <textarea name="note" placeholder="备注" style="width:100%;padding:10px;margin-bottom:10px;height:80px"></textarea>
-        <button type="submit" style="width:100%;padding:12px;background:#007bff;color:white;border:none;border-radius:6px">提交</button>
-      </form>
-    </div>
-    <div id="waitMsg" style="display:none;text-align:center;font-weight:bold;color:green">
-      已提交，请等待报价...（请稍后刷新）
-    </div>
-    <div id="resultBox" style="margin-top:20px;text-align:left"></div>
-  </div>
+
+  <script>
+    const translations = {
+      zh: { title: "产品报价表", placeholder1: "产品描述", placeholder2: "产品规格（选填）", placeholder3: "手机号（含国家码）", submit: "跳转到 WhatsApp" },
+      en: { title: "Product Quote Form", placeholder1: "Product Description", placeholder2: "Product Specifications (optional)", placeholder3: "Phone Number (with country code)", submit: "Send via WhatsApp" },
+      ru: { title: "Форма запроса", placeholder1: "Описание продукта", placeholder2: "Характеристики (необязательно)", placeholder3: "Телефон (с кодом)", submit: "Отправить в WhatsApp" },
+      ar: { title: "طلب عرض سعر", placeholder1: "وصف المنتج", placeholder2: "المواصفات (اختياري)", placeholder3: "رقم الهاتف (مع رمز الدولة)", submit: "إرسال عبر واتساب" },
+      pt: { title: "Pedido de Cotação", placeholder1: "Descrição do Produto", placeholder2: "Especificações (opcional)", placeholder3: "Telefone (com código)", submit: "Enviar via WhatsApp" },
+      es: { title: "Solicitud de Cotización", placeholder1: "Descripción del producto", placeholder2: "Especificaciones (opcional)", placeholder3: "Teléfono (con código)", submit: "Enviar por WhatsApp" },
+      fr: { title: "Demande de Devis", placeholder1: "Description du produit", placeholder2: "Spécifications (facultatif)", placeholder3: "Téléphone (avec indicatif)", submit: "Envoyer via WhatsApp" }
+    };
+
+    function setLang(lang) {
+      const t = translations[lang] || translations.en;
+      document.getElementById('form-title').innerText = t.title;
+      document.getElementById('product').placeholder = t.placeholder1;
+      document.getElementById('spec').placeholder = t.placeholder2;
+      document.getElementById('phone').placeholder = t.placeholder3;
+      document.getElementById('submitBtn').innerText = t.submit;
+    }
+
+    const browserLang = navigator.language.slice(0, 2);
+    setLang(browserLang);
+  </script>
 </body>
 </html>
