@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>销售报价后台</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import {
+      getFirestore, collection, query, orderBy, onSnapshot, updateDoc, doc
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBIhaNpTF7eOPd4UzH0_WuBHMoKhaZ9f10",
+      authDomain: "cnu-tracker.firebaseapp.com",
+      projectId: "cnu-tracker",
+      storageBucket: "cnu-tracker.appspot.com",
+      messagingSenderId: "334145477498",
+      appId: "1:334145477498:web:25d2df0ea74fc9d27694c3"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const thStyle = 'border:1px solid #ccc;padding:8px;background:#f7f7f7';
+    const tdStyle = 'border:1px solid #ccc;padding:8px';
+    const inputStyle = 'width:80px';
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const table = document.getElementById("quoteTableBody");
+      const q = query(collection(db, "quotes"), orderBy("createdAt", "desc"));
+      onSnapshot(q, (querySnapshot) => {
+        table.innerHTML = "";
+        querySnapshot.forEach((docSnap) => {
+          const q = docSnap.data();
+          const id = docSnap.id;
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td style='${tdStyle}'>${q.name}</td>
+            <td style='${tdStyle}'>${q.product}</td>
+            <td style='${tdStyle}'>${q.thickness} × ${q.width}</td>
+            <td style='${tdStyle}'>${q.quantity}</td>
+            <td style='${tdStyle}'>${q.country}</td>
+            <td style='${tdStyle}'>${q.contact}</td>
+            <td style='${tdStyle}'><input id='price-${id}' value='${q.price || ""}' style='${inputStyle}' /></td>
+            <td style='${tdStyle}'><input id='total-${id}' value='${q.total || ""}' style='${inputStyle}' /></td>
+            <td style='${tdStyle}'><input id='comment-${id}' value='${q.comment || ""}' style='${inputStyle}' /></td>
+            <td style='${tdStyle}'>
+              <button onclick='updateQuote("${id}")' style='padding:6px 12px; background:#28a745; color:white; border:none; border-radius:5px;'>保存</button>
+            </td>
+          `;
+          table.appendChild(row);
+        });
+      });
+    });
+
+    window.updateQuote = async (id) => {
+      const price = document.getElementById(`price-${id}`).value;
+      const total = document.getElementById(`total-${id}`).value;
+      const comment = document.getElementById(`comment-${id}`).value;
+      const ref = doc(db, 'quotes', id);
+      await updateDoc(ref, { price, total, comment, quoted: true });
+      alert('报价已更新');
+    };
+  </script>
+</head>
+<body>
+  <div style="padding:30px">
+    <h2 style="text-align:center;margin-bottom:20px">📊 客户需求列表（销售后台）</h2>
+    <table style="width:100%;border-collapse:collapse">
+      <thead>
+        <tr>
+          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">姓名</th>
+          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">产品</th>
+          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">尺寸</th>
+          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">数量</th>
+          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">国家</th>
+          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">联系方式</th>
+          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">单价</th>
+          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">总价</th>
+          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">备注</th>
+          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">操作</th>
+        </tr>
+      </thead>
+      <tbody id="quoteTableBody"></tbody>
+    </table>
+  </div>
+</body>
+</html>
