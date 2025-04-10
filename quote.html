@@ -117,11 +117,10 @@
     // Initialize international phone input with fixed default country (e.g., US or China)
     const input = document.querySelector("#phone");
     const iti = intlTelInput(input, {
-      initialCountry: "auto", // Automatically detect user's country
+      initialCountry: "us", // You can change to 'auto' or any default country you prefer
       geoIpLookup: function(callback) {
-        fetch("https://ipinfo.io?token=YOUR_API_KEY")
-          .then(response => response.json())
-          .then(data => callback(data.country));
+        // We can skip geoIpLookup here for simplicity, or use fallback to auto set a default
+        callback("us"); // Default to "us" if geoIpLookup fails
       },
       utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input/build/js/utils.js", // Script to format phone number
     });
@@ -218,4 +217,3 @@
   </script>
 </body>
 </html>
-
