@@ -10,7 +10,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import {
-      getFirestore, collection, query, orderBy, onSnapshot, updateDoc, doc
+      getFirestore, collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -96,7 +96,7 @@
 
     <!-- 电话号码输入框 -->
     <label for="phone">客户手机号：</label>
-    <input id="phone" type="tel" style="width: 100%" />
+    <input id="phone" type="tel" style="width: 100%" />  
 
     <!-- 提交按钮 -->
     <button onclick="submitQuote()" style="padding:6px 12px; background:#007bff; color:white; border:none; border-radius:5px;margin-top:10px;">提交报价</button>
@@ -122,9 +122,28 @@
       const total = document.getElementById('total').value;
       const comment = document.getElementById('comment').value;
 
+      // 验证手机号
+      if (!iti.isValidNumber()) {
+        alert("请输入有效的手机号码");
+        return;
+      }
+
       if (phoneNumber && price && total) {
         alert(`报价提交成功!\n手机号：${phoneNumber}\n单价：${price}\n总价：${total}\n备注：${comment}`);
-        // 在此提交数据到数据库
+        // 提交报价数据到后台
+        addDoc(collection(db, "quotes"), {
+          product: "产品",
+          spec: "尺寸",
+          price: price,
+          total: total,
+          comment: comment,
+          phone: phoneNumber,
+          createdAt: new Date(),
+        }).then(() => {
+          alert('报价信息已提交');
+        }).catch((error) => {
+          alert('提交失败：' + error.message);
+        });
       } else {
         alert("请填写完整的报价信息");
       }
