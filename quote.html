@@ -11,61 +11,44 @@
       background-size: cover;
       margin: 0;
       padding: 0;
+      color: #fff;
     }
     .overlay {
-      background-color: rgba(255, 255, 255, 0.95);
+      background-color: rgba(0, 0, 0, 0.7);
       padding: 30px;
       max-width: 600px;
       margin: 50px auto;
       border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
     }
     h2 {
       text-align: center;
-      color: #002244;
+      color: #00b0ff;
+      font-size: 28px;
+      margin-bottom: 20px;
     }
     input, select, textarea, button {
       width: 100%;
       padding: 16px;
       margin: 10px 0;
       border-radius: 6px;
-      border: 1px solid #ccc;
+      border: 1px solid #0066cc;
       font-size: 16px;
-    }
-    textarea {
-      resize: vertical;
-      height: 100px;
+      color: #fff;
+      background-color: #333;
     }
     button {
-      background-color: #0066cc;
+      background-color: #00b0ff;
       color: white;
       border: none;
       cursor: pointer;
-    }
-    button:hover {
-      background-color: #004999;
-    }
-    .brand {
-      text-align: center;
-      font-size: 26px;
-      font-weight: bold;
-      margin-bottom: 15px;
-      color: #003366;
-    }
-    .flag-select {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin-bottom: 16px;
-    }
-    .flag-select button {
-      border: none;
-      background: none;
-      cursor: pointer;
       font-size: 18px;
     }
+    button:hover {
+      background-color: #0099cc;
+    }
     .quote-box {
-      background: #f0f8ff;
+      background: #1c1c1c;
       padding: 16px;
       margin-top: 20px;
       border-radius: 8px;
@@ -82,34 +65,25 @@
       color: green;
       margin-top: 20px;
     }
+    .contact-info {
+      margin-top: 20px;
+      text-align: center;
+      font-size: 16px;
+    }
+    .contact-info a {
+      color: #00b0ff;
+      text-decoration: none;
+    }
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input/build/css/intlTelInput.min.css">
   <script src="https://cdn.jsdelivr.net/npm/intl-tel-input/build/js/intlTelInput.min.js"></script>
 </head>
 <body>
   <div class="overlay" id="quoteSection">
-    <div class="brand">CHINACNU STEEL</div>
-    <div class="flag-select">
-      <button onclick="setLang('zh')">🇨🇳</button>
-      <button onclick="setLang('en')">🇺🇸</button>
-      <button onclick="setLang('ru')">🇷🇺</button>
-      <button onclick="setLang('ar')">🇸🇦</button>
-      <button onclick="setLang('pt')">🇧🇷</button>
-      <button onclick="setLang('es')">🇪🇸</button>
-      <button onclick="setLang('fr')">🇫🇷</button>
-    </div>
-    <h2 id="form-title">Product Quote Form</h2>
+    <h2>CHINACNU STEEL - Product Quote Form</h2>
     <form id="quoteForm">
       <textarea id="product" name="product" placeholder="What product do you need?" required></textarea>
-      <textarea id="spec" name="spec" placeholder="What specifications do you need?"></textarea>
-      <select id="country" name="country" required>
-        <option value="">Select Country</option>
-        <option value="US">United States</option>
-        <option value="GB">United Kingdom</option>
-        <option value="IN">India</option>
-        <option value="CN">China</option>
-        <!-- Add more countries as needed -->
-      </select>
+      <textarea id="spec" name="spec" placeholder="What specifications do you need?" required></textarea>
       <input type="tel" id="phone" name="phone" placeholder="Phone number (e.g., 1234567890)" required />
       <button type="submit" id="submitBtn">Submit Quote</button>
     </form>
@@ -122,7 +96,7 @@
     <div class="success-message" id="successMessage" style="display: none;">
       ✅ Quote submitted successfully!
     </div>
-    <div style="margin-top:20px;text-align:center">
+    <div class="contact-info">
       📞 Contact us: <a href="https://wa.me/8619154316688" target="_blank">WhatsApp 8619154316688</a>
     </div>
   </div>
@@ -204,26 +178,36 @@
       const product = document.getElementById('product').value;
       const spec = document.getElementById('spec').value;
       const phone = iti.getNumber();  // Get the full phone number with the country code
-      const country = document.getElementById('country').value;
 
       // Display success message after form submission
       document.getElementById('quoteBox').style.display = 'block';
-      document.getElementById('quoteInfo').innerText = `Product: ${product}\nSpecification: ${spec}\nPhone: ${phone}\nCountry: ${country}`;
+      document.getElementById('quoteInfo').innerText = `Product: ${product}\nSpecification: ${spec}\nPhone: ${phone}`;
       document.getElementById('successMessage').style.display = 'block';
 
       // Clear form fields after submission
       document.getElementById('quoteForm').reset();
+
+      // Send form data to backend
+      const formData = new FormData();
+      formData.append("product", product);
+      formData.append("spec", spec);
+      formData.append("phone", phone);
+
+      // Send data to the backend (example using fetch)
+      fetch('/your-backend-endpoint', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log("Server response:", data);
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
     });
 
-    // Initialize country codes for the phone number input
-    function loadCountryCodes() {
-      const select = document.getElementById('code');
-      select.innerHTML = ''; // Clear any existing options
-      const countryData = iti.getSelectedCountryData();
-      select.appendChild(new Option(`+${countryData.dialCode}`, `+${countryData.dialCode}`));  // Add the selected country code
-    }
-
-    loadCountryCodes();  // Initialize country code selection
   </script>
 </body>
 </html>
+
