@@ -75,6 +75,13 @@
       margin-top: 10px;
       background-color: #28a745;
     }
+    .success-message {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: green;
+      margin-top: 20px;
+    }
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input/build/css/intlTelInput.min.css">
   <script src="https://cdn.jsdelivr.net/npm/intl-tel-input/build/js/intlTelInput.min.js"></script>
@@ -107,6 +114,9 @@
       <button onclick="downloadQuote()">📥 Save Quote Text</button>
       <button onclick="downloadQuoteImage()">🖼️ Save as Image</button>
     </div>
+    <div class="success-message" id="successMessage" style="display: none;">
+      ✅ Quote submitted successfully!
+    </div>
     <div style="margin-top:20px;text-align:center">
       📞 Contact us: <a href="https://wa.me/8619154316688" target="_blank">WhatsApp 8619154316688</a>
     </div>
@@ -119,8 +129,7 @@
     const iti = intlTelInput(input, {
       initialCountry: "us", // Default to US
       geoIpLookup: function(callback) {
-        // Default to US if geoIpLookup fails
-        callback("us");
+        callback("us"); // Default to US if geoIpLookup fails
       },
       utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input/build/js/utils.js", // Script to format phone number
     });
@@ -190,19 +199,13 @@
       const spec = document.getElementById('spec').value;
       const phone = iti.getNumber();  // Get the full phone number with the country code
 
-      // Check if phone number is valid
-      if (!iti.isValidNumber()) {
-        alert('Please enter a valid phone number.');
-        return;
-      }
+      // Display success message after form submission
+      document.getElementById('quoteBox').style.display = 'block';
+      document.getElementById('quoteInfo').innerText = `Product: ${product}\nSpecification: ${spec}\nPhone: ${phone}`;
+      document.getElementById('successMessage').style.display = 'block';
 
-      if (product && spec && phone) {
-        console.log("Form Submitted", { product, spec, phone }); // Debugging statement
-        document.getElementById('quoteInfo').innerText = `Product: ${product}\nSpecification: ${spec}\nPhone: ${phone}`;
-        document.getElementById('quoteBox').style.display = 'block';
-      } else {
-        alert('Please fill out all fields.');
-      }
+      // Clear form fields after submission
+      document.getElementById('quoteForm').reset();
     });
 
     // Initialize country codes for the phone number input
@@ -217,3 +220,4 @@
   </script>
 </body>
 </html>
+
