@@ -117,7 +117,7 @@
     // Initialize international phone input with fixed default country (e.g., US or China)
     const input = document.querySelector("#phone");
     const iti = intlTelInput(input, {
-      initialCountry: "us", // Set a default country code, you can also set 'auto' but that might not work always
+      initialCountry: "auto", // Automatically detect user's country
       geoIpLookup: function(callback) {
         fetch("https://ipinfo.io?token=YOUR_API_KEY")
           .then(response => response.json())
@@ -192,6 +192,12 @@
       const spec = document.getElementById('spec').value;
       const phone = iti.getNumber();  // Get the full phone number with the country code
 
+      // Check if phone number is valid
+      if (!iti.isValidNumber()) {
+        alert('Please enter a valid phone number.');
+        return;
+      }
+
       if (product && spec && phone) {
         document.getElementById('quoteInfo').innerText = `Product: ${product}\nSpecification: ${spec}\nPhone: ${phone}`;
         document.getElementById('quoteBox').style.display = 'block';
@@ -212,3 +218,4 @@
   </script>
 </body>
 </html>
+
