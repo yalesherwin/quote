@@ -102,10 +102,15 @@
     <form id="quoteForm">
       <textarea id="product" name="product" placeholder="What product do you need?" required></textarea>
       <textarea id="spec" name="spec" placeholder="What specifications do you need?"></textarea>
-      <select id="code" name="code" required>
-        <option>Loading country codes...</option>
+      <select id="country" name="country" required>
+        <option value="">Select Country</option>
+        <option value="US">United States</option>
+        <option value="GB">United Kingdom</option>
+        <option value="IN">India</option>
+        <option value="CN">China</option>
+        <!-- Add more countries as needed -->
       </select>
-      <input type="tel" id="phone" name="phone" placeholder="Phone number (e.g., +19154316688)" required />
+      <input type="tel" id="phone" name="phone" placeholder="Phone number (e.g., 1234567890)" required />
       <button type="submit" id="submitBtn">Submit Quote</button>
     </form>
     <div class="quote-box" id="quoteBox">
@@ -124,14 +129,15 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <script>
-    // Initialize international phone input with fixed default country (e.g., US or China)
+    // Initialize international phone input without displaying country code
     const input = document.querySelector("#phone");
     const iti = intlTelInput(input, {
-      initialCountry: "us", // Default to US
+      initialCountry: "auto", // Auto-detect country
       geoIpLookup: function(callback) {
         callback("us"); // Default to US if geoIpLookup fails
       },
       utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input/build/js/utils.js", // Script to format phone number
+      nationalMode: true, // Allow national phone numbers only
     });
 
     // Language data for switching content
@@ -198,10 +204,11 @@
       const product = document.getElementById('product').value;
       const spec = document.getElementById('spec').value;
       const phone = iti.getNumber();  // Get the full phone number with the country code
+      const country = document.getElementById('country').value;
 
       // Display success message after form submission
       document.getElementById('quoteBox').style.display = 'block';
-      document.getElementById('quoteInfo').innerText = `Product: ${product}\nSpecification: ${spec}\nPhone: ${phone}`;
+      document.getElementById('quoteInfo').innerText = `Product: ${product}\nSpecification: ${spec}\nPhone: ${phone}\nCountry: ${country}`;
       document.getElementById('successMessage').style.display = 'block';
 
       // Clear form fields after submission
@@ -220,4 +227,3 @@
   </script>
 </body>
 </html>
-
