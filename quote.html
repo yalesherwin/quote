@@ -117,10 +117,10 @@
     // Initialize international phone input with fixed default country (e.g., US or China)
     const input = document.querySelector("#phone");
     const iti = intlTelInput(input, {
-      initialCountry: "us", // You can change to 'auto' or any default country you prefer
+      initialCountry: "us", // Default to US
       geoIpLookup: function(callback) {
-        // We can skip geoIpLookup here for simplicity, or use fallback to auto set a default
-        callback("us"); // Default to "us" if geoIpLookup fails
+        // Default to US if geoIpLookup fails
+        callback("us");
       },
       utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input/build/js/utils.js", // Script to format phone number
     });
@@ -147,7 +147,6 @@
         downloadText: "📥 保存报价文字",
         downloadImageText: "🖼️ 保存为图片"
       },
-      // Add other languages here as necessary
     };
 
     // Function to switch languages
@@ -185,7 +184,7 @@
 
     // Form submission logic
     document.getElementById('quoteForm').addEventListener('submit', function(e) {
-      e.preventDefault();
+      e.preventDefault(); // Prevent default form submission
 
       const product = document.getElementById('product').value;
       const spec = document.getElementById('spec').value;
@@ -198,6 +197,7 @@
       }
 
       if (product && spec && phone) {
+        console.log("Form Submitted", { product, spec, phone }); // Debugging statement
         document.getElementById('quoteInfo').innerText = `Product: ${product}\nSpecification: ${spec}\nPhone: ${phone}`;
         document.getElementById('quoteBox').style.display = 'block';
       } else {
