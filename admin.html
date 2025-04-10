@@ -1,153 +1,18 @@
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>销售报价后台</title>
-  <!-- 引入intl-tel-input CSS和JS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input/build/css/intlTelInput.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input/build/js/intlTelInput.min.js"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import {
-      getFirestore, collection, query, orderBy, onSnapshot, updateDoc, doc, addDoc
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+from flask import Flask, request, jsonify
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBIhaNpTF7eOPd4UzH0_WuBHMoKhaZ9f10",
-      authDomain: "cnu-tracker.firebaseapp.com",
-      projectId: "cnu-tracker",
-      storageBucket: "cnu-tracker.appspot.com",
-      messagingSenderId: "334145477498",
-      appId: "1:334145477498:web:25d2df0ea74fc9d27694c3"
-    };
+app = Flask(__name__)
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+@app.route('/your-backend-endpoint', methods=['POST'])
+def handle_form_submission():
+    product = request.form.get('product')
+    spec = request.form.get('spec')
+    phone = request.form.get('phone')
 
-    const thStyle = 'border:1px solid #ccc;padding:8px;background:#f7f7f7';
-    const tdStyle = 'border:1px solid #ccc;padding:8px';
-    const inputStyle = 'width:80px';
+    # Process the data (e.g., save it to a database)
+    print(f"Received product: {product}, spec: {spec}, phone: {phone}")
 
-    window.addEventListener("DOMContentLoaded", () => {
-      const table = document.getElementById("quoteTableBody");
-      const q = query(collection(db, "quotes"), orderBy("createdAt", "desc"));
-      onSnapshot(q, (querySnapshot) => {
-        table.innerHTML = "";
-        querySnapshot.forEach((docSnap) => {
-          const q = docSnap.data();
-          const id = docSnap.id;
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td style='${tdStyle}'>${q.name}</td>
-            <td style='${tdStyle}'>${q.product}</td>
-            <td style='${tdStyle}'>${q.thickness} × ${q.width}</td>
-            <td style='${tdStyle}'>${q.quantity}</td>
-            <td style='${tdStyle}'>${q.country}</td>
-            <td style='${tdStyle}'>${q.contact}</td>
-            <td style='${tdStyle}'>
-              <input id='price-${id}' value='${q.price || ""}' style='${inputStyle}' />
-            </td>
-            <td style='${tdStyle}'>
-              <input id='total-${id}' value='${q.total || ""}' style='${inputStyle}' />
-            </td>
-            <td style='${tdStyle}'>
-              <input id='comment-${id}' value='${q.comment || ""}' style='${inputStyle}' />
-            </td>
-            <td style='${tdStyle}'>
-              <button onclick='updateQuote("${id}")' style='padding:6px 12px; background:#28a745; color:white; border:none; border-radius:5px;'>保存</button>
-            </td>
-          `;
-          table.appendChild(row);
-        });
-      });
-    });
+    # Respond with a success message
+    return jsonify({"message": "Quote submitted successfully!"})
 
-    window.updateQuote = async (id) => {
-      const price = document.getElementById(`price-${id}`).value;
-      const total = document.getElementById(`total-${id}`).value;
-      const comment = document.getElementById(`comment-${id}`).value;
-      const ref = doc(db, 'quotes', id);
-      await updateDoc(ref, { price, total, comment, quoted: true });
-      alert('报价已更新');
-    };
-  </script>
-</head>
-<body>
-  <div style="padding:30px">
-    <h2 style="text-align:center;margin-bottom:20px">📊 客户需求列表（销售后台）</h2>
-    <table style="width:100%;border-collapse:collapse">
-      <thead>
-        <tr>
-          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">姓名</th>
-          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">产品</th>
-          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">尺寸</th>
-          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">数量</th>
-          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">国家</th>
-          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">联系方式</th>
-          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">单价</th>
-          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">总价</th>
-          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">备注</th>
-          <th style="border:1px solid #ccc;padding:8px;background:#f7f7f7">操作</th>
-        </tr>
-      </thead>
-      <tbody id="quoteTableBody"></tbody>
-    </table>
-
-    <!-- 电话号码输入框 -->
-    <label for="phone">客户手机号：</label>
-    <input id="phone" type="tel" style="width: 100%" />  
-
-    <!-- 提交按钮 -->
-    <button onclick="submitQuote()" style="padding:6px 12px; background:#007bff; color:white; border:none; border-radius:5px;margin-top:10px;">提交报价</button>
-  </div>
-
-  <script>
-    // 初始化 intl-tel-input
-    const input = document.querySelector("#phone");
-    const iti = intlTelInput(input, {
-      initialCountry: "auto", // 自动选择初始国家
-      geoIpLookup: function(callback) {
-        fetch("https://ipinfo.io?token=YOUR_API_KEY")
-          .then(response => response.json())
-          .then(data => callback(data.country));
-      },
-      utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input/build/js/utils.js", // 用于格式化电话号码
-    });
-
-    // 提交报价函数
-    function submitQuote() {
-      const phoneNumber = iti.getNumber(); // 获取完整的电话号码
-      const price = document.getElementById('price').value;
-      const total = document.getElementById('total').value;
-      const comment = document.getElementById('comment').value;
-
-      // 验证手机号
-      if (!iti.isValidNumber()) {
-        alert("请输入有效的手机号码");
-        return;
-      }
-
-      if (phoneNumber && price && total) {
-        alert(`报价提交成功!\n手机号：${phoneNumber}\n单价：${price}\n总价：${total}\n备注：${comment}`);
-        // 提交报价数据到后台
-        addDoc(collection(db, "quotes"), {
-          product: "产品",
-          spec: "尺寸",
-          price: price,
-          total: total,
-          comment: comment,
-          phone: phoneNumber,
-          createdAt: new Date(),
-        }).then(() => {
-          alert('报价信息已提交');
-        }).catch((error) => {
-          alert('提交失败：' + error.message);
-        });
-      } else {
-        alert("请填写完整的报价信息");
-      }
-    }
-  </script>
-</body>
-</html>
+if __name__ == '__main__':
+    app.run(debug=True)
